@@ -1,0 +1,79 @@
+import os
+from tkinter import filedialog as fd
+from tkinter import messagebox as msg
+from tkinter import END
+from customtkinter import CTkLabel,CTkButton,CTkEntry,CTk,CENTER
+
+class window:
+    
+    def __init__(self):
+        self.app = CTk()
+        self.app.geometry("400x200")
+        self.app.title("File Organizer")
+# Window's Label for directing the Path area
+        self.label = CTkLabel(master=self.app,text="Enter the Path",corner_radius=8,fg_color="Yellow",font=("Georgia",22,"italic"))
+        self.label.place(relx=0.05,rely=0.05)
+# Entry Box to enter the path of the folder
+        self.entrybox = CTkEntry(master=self.app,width=220,height=40,corner_radius=8,border_color="black",border_width=2,
+        placeholder_text="path",placeholder_text_color="black",font=("Georgia",12,"normal"))
+        self.entrybox.place(relx=0.05,rely=0.21)
+# Button for selecting folder
+        self.button = CTkButton(master=self.app,text="Select dir..",width=40,height=40,corner_radius=12,text_color="black",border_color="white",border_width=2,fg_color="#50B4BD",command=self.select_file)
+        self.button.place(relx=0.63,rely=0.21)
+# Button for Organzing the file
+        self.orgranize_button = CTkButton(master=self.app,text="Organize",text_color="white",corner_radius=8,fg_color="green",width=100,height=32,hover_color="#54A03A",command=self.organize)
+        self.orgranize_button.place(relx=0.5,rely=0.8,anchor=CENTER)
+
+        self.app.mainloop()
+#Function for selecting directory
+    def select_file(self):
+        self.root_path = fd.askdirectory()
+        self.entrybox.delete(0,END)
+        self.entrybox.insert("end",self.root_path)
+        
+# Function for organizing the file
+    def organize(self):
+        if self.entrybox.get() == "":
+            msg.showerror("Error","Please select any directory")
+            return
+
+        if not os.path.exists(self.entrybox.get()):
+            msg.showerror("File Not Found","The path you entered doesn't exists")
+            return
+        
+        file_extensions = { ".txt": "Text Files", ".doc": "Word Documents", ".docx": "Word Documents", ".pdf": "PDF Files", ".jpg": "Images", ".jpeg": "Images", ".png": "Images", ".gif": "Images", ".bmp": "Images", ".mp3": "Music", ".wav": "Music", ".flac": "Music", ".mp4": "Videos", ".avi": "Videos", ".mov": "Videos", ".mkv": "Videos", ".zip": "Compressed Files", ".rar": "Compressed Files", ".7z": "Compressed Files", ".exe": "Executables", ".msi": "Installers", ".py": "Python Scripts", ".java": "Java Files", ".c": "C Files", ".cpp": "C++ Files", ".html": "HTML Files", ".css": "CSS Files", ".js": "JavaScript Files", ".xlsx": "Excel Files", ".xls": "Excel Files", ".ppt": "PowerPoint Presentations", ".pptx": "PowerPoint Presentations", ".odt": "OpenDocument Text Files", ".ods": "OpenDocument Spreadsheets", ".odp": "OpenDocument Presentations", ".svg": "Vector Images", ".ico": "Icon Files", ".xml": "XML Files", ".json": "JSON Files", ".yaml": "YAML Files", ".csv": "CSV Files", ".tsv": "TSV Files", ".sql": "SQL Files", ".log": "Log Files", ".bat": "Batch Files", ".sh": "Shell Scripts", ".md": "Markdown Files", ".ini": "Configuration Files", ".conf": "Configuration Files", ".rtf": "Rich Text Files", ".tar": "Tar Files", ".gz": "Gzip Files", ".bz2": "Bzip2 Files"}
+        last_name = "Folder"
+# unpacking the the files with its directory
+        for root,dir_,filenames in os.walk(self.entrybox.get()):
+# iterating thoughout the filenames
+            for files in filenames:
+                file_path = os.path.join(root,files)
+                split_extension = os.path.splitext(file_path)
+                extension = split_extension[-1]
+                if extension in file_extensions:
+                    try:
+                        destination_folder = os.path.join(self.entrybox.get(),file_extensions[extension])
+                        if not os.path.exists(destination_folder):
+                            os.makedirs(file_extensions[extension])
+                        destination_path = os.path.join(destination_folder,os.path.basename(file_path))
+                        if not os.path.exists(destination_path):
+                            os.rename(file_path,destination_path)  
+                        else:
+                            continue  
+                    except Exception as e:
+                        msg.showerror("Error",e)
+                        return
+
+# If you've duplicate files or file with same name then it will skip the file
+                else:
+                    folder_name = f"{extension} {last_name}"
+                    destination_folder = os.path.join(self.entrybox.get(),folder_name)
+                    if not os.path.exists(destination_folder):
+                        os.makedirs(destination_folder)
+                    destination_path = os.path.join(destination_folder,os.path.basename(file_path))
+                    os.rename(file_path,destination_path)
+#Showing information                 
+        msg.showinfo("Success","Successfully file organized!")
+
+if __name__=="__main__":
+    obj = window()
